@@ -10,7 +10,12 @@ const buildReminderEmbed = (message: Message, user: User): MessageCreateOptions 
     .setTitle('You asked me to remind you of this message')
     .setURL(`https://discord.com/channels/${message.guildId}/${message.channelId}/${message.id}`)
     .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() || undefined })
-    .setDescription(message.content);
+    .setDescription(message.content.substring(0, 4096));
+
+  const firstAttachment = message.attachments.first();
+  if (firstAttachment?.url) {
+    embed.setImage(firstAttachment.url);
+  }
 
   return { embeds: [embed], components: [row] };
 };

@@ -15,9 +15,9 @@
   "dependencies": {
     "bull": "^4.10.1",
     "chrono-node": "^2.4.1",
+    "date-fns": "^2.29.3",
     "discord.js": "^14.6.0",
-    "dotenv": "^16.0.3",
-    "humanize-duration-ts": "^2.1.1"
+    "dotenv": "^16.0.3"
   },
   "devDependencies": {
     "@types/bull": "^3.15.9",

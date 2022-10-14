@@ -10,10 +10,21 @@ type RemindJob = {
   messageId: string;
 }
 
-const reminderQueue = new Queue<RemindJob>('reminders', REDIS_URL);
+const reminderQueue = new Queue<RemindJob>(
+  'reminders',
+  REDIS_URL,
+  {
+    defaultJobOptions: {
+      attempts: 3,
+      backoff: {
+        type: 'exponential',
+        delay: 1000,
+      },
+    },
+  });
 
 reminderQueue.process(async (job, done) => {
-  console.log('Processing reminder');
+  console.log(`Processing reminder ${job.id} attempt ${job.attemptsMade + 1}`);
   const { memberId, channelId, messageId } = job.data;
 
   try {
