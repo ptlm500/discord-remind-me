@@ -13,7 +13,6 @@ type MessageChoice = {
 const humanizer = new HumanizeDuration(new HumanizeDurationLanguage());
 humanizer.setOptions({ round: true, largest: 2 });
 
-
 const handleAutocomplete = async (interaction: AutocompleteInteraction) => {
   const focusedValue = interaction.options.getFocused();
   const choices: MessageChoice[] = [];
@@ -23,7 +22,7 @@ const handleAutocomplete = async (interaction: AutocompleteInteraction) => {
   if (messages) {
     messages.forEach(message => {
       if (message.content && message.member) {
-        const messageDetails = [message.member.id, message.guildId, message.channelId, message.id];
+        const messageDetails = [interaction.user.id, message.guildId, message.channelId, message.id];
         choices.push({
           sender: message.member.displayName,
           content: message.content,
@@ -49,17 +48,35 @@ const handleChatInput = async (interaction: ChatInputCommandInteraction) => {
       throw new Error('Invalid interaction');
     }
 
-    const remindAt = chrono.parseDate(whenString);
-    const now = new Date();
-    const delay = remindAt.getTime() - now.getTime();
+    const delay = getMsUntil(parseDateText(whenString));
+
+    if (delay < 0) {
+      throw new Error('You can\'t remind your past self!');
+    }
 
     const [memberId, guildId, channelId, messageId] = messageDetailsString.split(',');
 
     await reminderQueue.add({ memberId, guildId, channelId, messageId }, { delay });
+    console.log(`reminding in ${delay}`);
     console.log('Reminder queued');
 
     await interaction.reply({ ephemeral: true, content: `I'll remind you of this message ${humanizer.humanize(delay)} from now` });
   }
+};
+
+const parseDateText = (text: string) => {
+  const parsedDate = chrono.parseDate(text);
+
+  if (!parsedDate) {
+    throw new Error(`I couldn't understand that time "${text}"`);
+  }
+
+  return parsedDate;
+};
+
+const getMsUntil = (date: Date) => {
+  const now = new Date();
+  return date.getTime() - now.getTime();
 };
 
 export default {
