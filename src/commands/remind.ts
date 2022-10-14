@@ -34,7 +34,7 @@ const handleAutocomplete = async (interaction: AutocompleteInteraction) => {
 
     const filtered = choices.filter(choice => choice.sender.toLowerCase().includes(focusedOption.value) || choice.content.toLowerCase().includes(focusedOption.value));
 
-    await interaction.respond(filtered);
+    await interaction.respond(filtered.slice(0, 24));
   } else if (focusedOption.name === 'when') {
     const parsedTimes = parse(focusedOption.value);
 
