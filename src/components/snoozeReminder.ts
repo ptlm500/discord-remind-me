@@ -1,6 +1,7 @@
-import { SelectMenuBuilder, SelectMenuInteraction } from 'discord.js';
+import { Interaction, SelectMenuBuilder, SelectMenuInteraction } from 'discord.js';
 import { humanizeDelay } from '../utils/date';
 import reminderQueue from '../queue/reminderQueue';
+import directMessageDeletionQueue from '../queue/directMessageDeletionQueue';
 import parseDiscordMessageUrl from '../utils/parseDiscordMessageUrl';
 
 const ONE_HOUR_IN_MS = 60 * 60 * 1000;
@@ -48,8 +49,20 @@ const handleInteraction = async (interaction: SelectMenuInteraction) => {
     },
   );
 
-  await interaction.reply(`Snoozed for ${humanizeDelay(delay)}`);
+  await replyWithSelfDeletingDM(interaction, `Snoozed for ${humanizeDelay(delay)}`);
+
   await interaction.message.delete();
+};
+
+const replyWithSelfDeletingDM = async (interaction: Interaction, replyContent: string) => {
+  if (!interaction.isRepliable() || !interaction.channel?.isDMBased()) return;
+  await interaction.reply(replyContent);
+  const reply = await interaction.fetchReply();
+
+  await directMessageDeletionQueue.add({
+    userId: interaction.channel.recipientId,
+    messageId: reply.id,
+  });
 };
 
 export default {
