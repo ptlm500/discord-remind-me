@@ -15,22 +15,12 @@ client.once('ready', async () => {
 client.on('interactionCreate', async interaction => {
   try {
     if (interaction.isAutocomplete()) {
-      const { commandName } = interaction;
-
-      if (commandName === 'remind') {
-        await commands.remind.handleAutocomplete(interaction);
-      }
+      commands.get(interaction.commandName)?.handleAutocomplete(interaction);
 
     } else if (interaction.isChatInputCommand()) {
-      const { commandName } = interaction;
-
-      if (commandName === 'remind') {
-        await commands.remind.handleChatInput(interaction);
-      }
+      commands.get(interaction.commandName)?.handleChatInput(interaction);
     } else if (interaction.isSelectMenu()) {
-      if (interaction.customId === 'snoozeReminder') {
-        components.snoozeReminder.handleInteraction(interaction);
-      }
+      components.selectMenus.get(interaction.customId)?.handleInteraction(interaction);
     }
   } catch (e) {
     console.error(e);

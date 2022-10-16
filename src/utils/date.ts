@@ -1,4 +1,4 @@
-import { addMilliseconds, formatDistanceToNow } from 'date-fns';
+import { addMilliseconds, formatDistanceToNow, setHours, startOfTomorrow } from 'date-fns';
 import * as chrono from 'chrono-node';
 
 export const humanizeDelay = (delay: number) => {
@@ -21,4 +21,10 @@ export const parseDateText = (text: string) => {
 export const getMsUntil = (date: Date) => {
   const now = new Date();
   return date.getTime() - now.getTime();
+};
+
+export const getMsUntilTomorrowAt = (hour: number) => {
+  const tomorrow = startOfTomorrow();
+
+  return getMsUntil(setHours(tomorrow, hour));
 };

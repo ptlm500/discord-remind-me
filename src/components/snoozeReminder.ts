@@ -1,11 +1,10 @@
-import { Interaction, SelectMenuBuilder, SelectMenuInteraction } from 'discord.js';
-import { humanizeDelay } from '../utils/date';
+import { RepliableInteraction, SelectMenuBuilder, SelectMenuInteraction } from 'discord.js';
+import { humanizeDelay, getMsUntilTomorrowAt } from '../utils/date';
 import reminderQueue from '../queue/reminderQueue';
 import directMessageDeletionQueue from '../queue/directMessageDeletionQueue';
 import parseDiscordMessageUrl from '../utils/parseDiscordMessageUrl';
+import { hoursToMilliseconds, minutesToMilliseconds } from 'date-fns';
 
-const ONE_HOUR_IN_MS = 60 * 60 * 1000;
-const FIVE_MINS_IN_MS = 5 * 60 * 1000;
 const ID = 'snoozeReminder';
 
 const builder = new SelectMenuBuilder()
@@ -15,12 +14,22 @@ const builder = new SelectMenuBuilder()
     {
       label: '5 minutes',
       description: 'Remind you of this message again in 5 minutes',
-      value: `${FIVE_MINS_IN_MS}`,
+      value: `${minutesToMilliseconds(5)}`,
     },
     {
       label: '1 hour',
       description: 'Remind you of this message again in an hour',
-      value: `${ONE_HOUR_IN_MS}`,
+      value: `${hoursToMilliseconds(1)}`,
+    },
+    {
+      label: 'Tomorrow morning',
+      description: 'Remind you of this message again tomorrow at 9:00 AM',
+      value: `${getMsUntilTomorrowAt(9)}`,
+    },
+    {
+      label: 'Tomorrow evening',
+      description: 'Remind you of this message again tomorrow at 7:00 PM',
+      value: `${getMsUntilTomorrowAt(19)}`,
     },
   );
 
@@ -54,8 +63,8 @@ const handleInteraction = async (interaction: SelectMenuInteraction) => {
   await interaction.message.delete();
 };
 
-const replyWithSelfDeletingDM = async (interaction: Interaction, replyContent: string) => {
-  if (!interaction.isRepliable() || !interaction.channel?.isDMBased()) return;
+const replyWithSelfDeletingDM = async (interaction: RepliableInteraction, replyContent: string) => {
+  if (!interaction.channel?.isDMBased()) return;
   await interaction.reply(replyContent);
   const reply = await interaction.fetchReply();
 
