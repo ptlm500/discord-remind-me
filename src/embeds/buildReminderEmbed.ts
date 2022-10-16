@@ -1,9 +1,12 @@
-import { Message, User, EmbedBuilder, ActionRowBuilder, MessageCreateOptions, SelectMenuBuilder } from 'discord.js';
+import { Message, User, EmbedBuilder, ActionRowBuilder, MessageCreateOptions, SelectMenuBuilder, ButtonBuilder } from 'discord.js';
+import deleteReminder from '../components/deleteReminder';
 import snoozeReminder from '../components/snoozeReminder';
 
 const buildReminderEmbed = (message: Message, user: User): MessageCreateOptions => {
-  const row = new ActionRowBuilder<SelectMenuBuilder>()
+  const selectRow = new ActionRowBuilder<SelectMenuBuilder>()
     .addComponents(snoozeReminder.builder);
+  const buttonRow = new ActionRowBuilder<ButtonBuilder>()
+    .addComponents(deleteReminder.builder);
 
   const embed = new EmbedBuilder()
     .setColor(user.accentColor || 0x0099FF)
@@ -17,7 +20,7 @@ const buildReminderEmbed = (message: Message, user: User): MessageCreateOptions 
     embed.setImage(firstAttachment.url);
   }
 
-  return { embeds: [embed], components: [row] };
+  return { embeds: [embed], components: [selectRow, buttonRow] };
 };
 
 export default buildReminderEmbed;

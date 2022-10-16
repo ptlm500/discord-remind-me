@@ -1,5 +1,6 @@
 import { parse } from 'chrono-node';
 import { AutocompleteInteraction, SlashCommandBuilder, ChatInputCommandInteraction, Collection, Message, AutocompleteFocusedOption } from 'discord.js';
+import client from '../discordClient';
 import reminderService from '../services/reminderService';
 import { getMsUntil, parseDateText, humanizeDelay } from '../utils/date';
 
@@ -44,33 +45,44 @@ const handleWhenOption = async (interaction: AutocompleteInteraction, focusedOpt
 };
 
 const handleChatInput = async (interaction: ChatInputCommandInteraction) => {
-  const { commandName } = interaction;
+  const reminderOptions = getReminderOptions(interaction);
+  await validateReminderOptions(reminderOptions);
 
-  if (commandName === 'remind') {
-    const messageDetailsString = interaction.options.getString('message');
-    const whenString = interaction.options.getString('when');
-    if (!messageDetailsString || !whenString) {
-      console.error('Invalid arguments passed to remind command');
-      throw new Error('Hmmm, I couldn\'t understand that.');
-    }
-
-    const delay = getMsUntil(parseDateText(whenString));
-
-    if (delay < 0) {
-      throw new Error('You can\'t remind your past self!');
-    }
-
-    reminderService
-      .createReminder({ ...getRemindJobFromChosenMessage(messageDetailsString), delay })
-      .then(async () => {
-        await interaction.reply({ ephemeral: true, content: `I'll remind you of this message in ${humanizeDelay(delay)}` });
+  reminderService
+    .createReminder(reminderOptions)
+    .then(async () => {
+      await interaction.reply({
+        ephemeral: true,
+        content: `I'll remind you of this message in ${humanizeDelay(reminderOptions.delay)}`,
       });
-  }
+    });
 };
 
-const getRemindJobFromChosenMessage = (messageDetails: string) => {
-  const [memberId, guildId, channelId, messageId] = messageDetails.split(',');
-  return { memberId, guildId, channelId, messageId };
+const getReminderOptions = (interaction: ChatInputCommandInteraction) => {
+  const [memberId, guildId, channelId, messageId] = interaction.options.getString('message', true).split(',');
+  return {
+    memberId,
+    guildId,
+    channelId,
+    messageId,
+    delay: getMsUntil(parseDateText(interaction.options.getString('when', true))),
+  };
+};
+
+const validateReminderOptions = async ({ memberId, guildId, channelId, messageId, delay }: { memberId: string, guildId: string, channelId: string, messageId: string, delay: number }) => {
+  if (delay < 0) {
+    throw new Error('You can\'t remind your past self.');
+  }
+  const guild = await client.guilds.fetch(guildId)
+    .catch(() => { throw new Error(`The server "${guildId}" doesn't exist.`); });
+  await guild.members.fetch(memberId)
+    .catch(() => { throw new Error(`The user "${memberId}" doesn't exist.`); });
+  const channel = await guild.channels.fetch(channelId);
+  if (!channel || !channel.isTextBased()) {
+    throw new Error(`The channel "${memberId}" isn't a valid text channel.`);
+  }
+  await channel.messages.fetch(messageId)
+    .catch(() => { throw new Error(`The message "${messageId}" doesn't exist in channel ${channelId}.`); });
 };
 
 const buildAutoCompleteChoices = (callerUserId: string, messages: Collection<string, Message<boolean>>) => {

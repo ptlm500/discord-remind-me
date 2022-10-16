@@ -1,10 +1,9 @@
-import { RepliableInteraction, SelectMenuBuilder, SelectMenuInteraction } from 'discord.js';
+import { SelectMenuBuilder, SelectMenuInteraction } from 'discord.js';
 import { humanizeDelay, getMsUntilTomorrowAt } from '../utils/date';
-import directMessageDeletionQueue from '../queue/directMessageDeletionQueue';
 import parseDiscordMessageUrl from '../utils/parseDiscordMessageUrl';
 import { hoursToMilliseconds, minutesToMilliseconds } from 'date-fns';
 import reminderService from '../services/reminderService';
-import client from '../discordClient';
+import interactionService from '../services/interactionService';
 
 const ID = 'snoozeReminder';
 
@@ -51,20 +50,8 @@ const handleInteraction = async (interaction: SelectMenuInteraction) => {
     ...parseDiscordMessageUrl(interaction.message.embeds[0].url),
     delay,
   }).then(async () => {
-    await replyWithSelfDeletingDM(interaction, `Snoozed for ${humanizeDelay(delay)}`);
-    // Ensure we have the DM channel in the cache
-    await client.channels.fetch(interaction.message.channelId);
-    await interaction.message.delete();
-  });
-};
-
-const replyWithSelfDeletingDM = async (interaction: RepliableInteraction, replyContent: string) => {
-  await interaction.reply(replyContent);
-  const reply = await interaction.fetchReply();
-
-  await directMessageDeletionQueue.add({
-    userId: interaction.user.id,
-    messageId: reply.id,
+    await interactionService.replyWithSelfDeletingMessage(interaction, `Snoozed for ${humanizeDelay(delay)}`);
+    await interactionService.deleteInteractionMessage(interaction);
   });
 };
 
