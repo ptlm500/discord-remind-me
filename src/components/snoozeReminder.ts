@@ -1,9 +1,10 @@
 import { RepliableInteraction, SelectMenuBuilder, SelectMenuInteraction } from 'discord.js';
 import { humanizeDelay, getMsUntilTomorrowAt } from '../utils/date';
-import reminderQueue from '../queue/reminderQueue';
 import directMessageDeletionQueue from '../queue/directMessageDeletionQueue';
 import parseDiscordMessageUrl from '../utils/parseDiscordMessageUrl';
 import { hoursToMilliseconds, minutesToMilliseconds } from 'date-fns';
+import reminderService from '../services/reminderService';
+import client from '../discordClient';
 
 const ID = 'snoozeReminder';
 
@@ -35,9 +36,6 @@ const builder = new SelectMenuBuilder()
 
 
 const handleInteraction = async (interaction: SelectMenuInteraction) => {
-  if (!interaction.channel?.isDMBased()) {
-    throw new Error('Can\'t snooze reminders outside of DMs');
-  }
   if (!interaction.message.embeds[0].url) {
     throw new Error('Original message embed has no URL');
   }
@@ -48,28 +46,24 @@ const handleInteraction = async (interaction: SelectMenuInteraction) => {
     throw new Error(`Couldn't parse, "${interaction.values[0]}"`);
   }
 
-  await reminderQueue.add(
-    {
-      memberId: interaction.channel.recipientId,
-      ...parseDiscordMessageUrl(interaction.message.embeds[0].url),
-    },
-    {
-      delay,
-    },
-  );
-
-  await replyWithSelfDeletingDM(interaction, `Snoozed for ${humanizeDelay(delay)}`);
-
-  await interaction.message.delete();
+  await reminderService.createReminder({
+    memberId: interaction.user.id,
+    ...parseDiscordMessageUrl(interaction.message.embeds[0].url),
+    delay,
+  }).then(async () => {
+    await replyWithSelfDeletingDM(interaction, `Snoozed for ${humanizeDelay(delay)}`);
+    // Ensure we have the DM channel in the cache
+    await client.channels.fetch(interaction.message.channelId);
+    await interaction.message.delete();
+  });
 };
 
 const replyWithSelfDeletingDM = async (interaction: RepliableInteraction, replyContent: string) => {
-  if (!interaction.channel?.isDMBased()) return;
   await interaction.reply(replyContent);
   const reply = await interaction.fetchReply();
 
   await directMessageDeletionQueue.add({
-    userId: interaction.channel.recipientId,
+    userId: interaction.user.id,
     messageId: reply.id,
   });
 };
