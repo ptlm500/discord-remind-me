@@ -91,12 +91,12 @@ const validateReminderOptions = async ({ memberId, guildId, channelId, messageId
 const buildAutoCompleteChoices = (callerUserId: string, messages: Collection<string, Message<boolean>>) => {
   const choices: MessageChoice[] = [];
   messages.forEach(message => {
-    if (message.content && message.author) {
+    if (message.cleanContent && message.author) {
       const messageDetails = [callerUserId, message.guildId, message.channelId, message.id];
       choices.push({
         sender: message.author.username,
-        content: message.content,
-        name: formatChoiceName(message.author.username, message.content),
+        content: message.cleanContent,
+        name: formatChoiceName(message.author.username, message.cleanContent),
         value: messageDetails.toString(),
       });
     }

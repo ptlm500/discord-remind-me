@@ -1,5 +1,5 @@
 import { REST, Routes } from 'discord.js';
-import { CLIENT_ID, DISCORD_TOKEN, GUILD_ID } from '../constants';
+import { CLIENT_ID, DISCORD_TOKEN } from '../constants';
 import commandMap from './index';
 import { buildContextCommands } from './reminderContextMenu';
 
