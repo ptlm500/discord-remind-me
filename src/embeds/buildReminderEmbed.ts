@@ -1,6 +1,7 @@
 import { Message, User, EmbedBuilder, ActionRowBuilder, MessageCreateOptions, SelectMenuBuilder, ButtonBuilder } from 'discord.js';
 import deleteReminder from '../components/deleteReminder';
 import snoozeReminder from '../components/snoozeReminder';
+import { buildDiscordMessageUrl } from '../utils/discordUrl';
 
 const buildReminderEmbed = (message: Message, user: User): MessageCreateOptions => {
   const selectRow = new ActionRowBuilder<SelectMenuBuilder>()
@@ -11,7 +12,7 @@ const buildReminderEmbed = (message: Message, user: User): MessageCreateOptions 
   const embed = new EmbedBuilder()
     .setColor(user.accentColor || 0x0099FF)
     .setTitle('You asked me to remind you of this message')
-    .setURL(`https://discord.com/channels/${message.guildId}/${message.channelId}/${message.id}`)
+    .setURL(buildDiscordMessageUrl(message))
     .setAuthor({ name: message.author.username, iconURL: message.author.avatarURL() || undefined })
     .setDescription(message.content.substring(0, 4096));
 

@@ -1,6 +1,6 @@
 import { SelectMenuBuilder, SelectMenuInteraction } from 'discord.js';
 import { humanizeDelay, getMsUntilTomorrowAt } from '../utils/date';
-import parseDiscordMessageUrl from '../utils/parseDiscordMessageUrl';
+import { parseDiscordMessageUrl } from '../utils/discordUrl';
 import { hoursToMilliseconds, minutesToMilliseconds } from 'date-fns';
 import reminderService from '../services/reminderService';
 import interactionService from '../services/interactionService';
