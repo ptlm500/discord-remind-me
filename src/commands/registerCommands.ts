@@ -13,7 +13,7 @@ const registerCommands = async () => {
 
   const commandsJSON = builders.map(command => command.toJSON());
 
-  await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commandsJSON });
+  await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commandsJSON });
   console.log('Registered slash commands');
 };
 
