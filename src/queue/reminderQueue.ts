@@ -34,7 +34,7 @@ reminderQueue.process(async (job, done) => {
       const message = await channel.messages.fetch(messageId);
       const user = await discordClient.users.fetch(memberId);
 
-      await user.send(buildReminderEmbed(message, user));
+      await user.send(buildReminderEmbed(message, user, new Date(job.timestamp)));
     }
 
     done();
