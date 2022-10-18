@@ -3,6 +3,7 @@ import registerCommands from './commands/registerCommands';
 import commands from './commands';
 import components from './components';
 import interactionService from './services/interactionService';
+import { handleContextMenu } from './commands/reminderContextMenu';
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
@@ -29,6 +30,9 @@ client.on('interactionCreate', async interaction => {
   } else if (interaction.isButton()) {
     components.buttons.get(interaction.customId)?.handleInteraction(interaction)
       .catch(e => console.error('Couldn\'t handle button', e));
+  } else if (interaction.isMessageContextMenuCommand()) {
+    handleContextMenu(interaction)
+      .catch(e => console.error('Couldn\'t handle context menu', e));
   }
 });
 
