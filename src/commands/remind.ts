@@ -1,5 +1,6 @@
 import { parse } from 'chrono-node';
 import { AutocompleteInteraction, SlashCommandBuilder, ChatInputCommandInteraction, Collection, Message, AutocompleteFocusedOption } from 'discord.js';
+import { MAXIMUM_DELAY } from '../constants';
 import client from '../discordClient';
 import reminderService from '../services/reminderService';
 import { getMsUntil, parseDateText, humanizeDelay } from '../utils/date';
@@ -72,6 +73,8 @@ const getReminderOptions = (interaction: ChatInputCommandInteraction) => {
 const validateReminderOptions = async ({ memberId, guildId, channelId, messageId, delay }: { memberId: string, guildId: string, channelId: string, messageId: string, delay: number }) => {
   if (delay < 0) {
     throw new Error('You can\'t remind your past self.');
+  } else if (delay > MAXIMUM_DELAY) {
+    throw new Error(`You can't set reminders over ${humanizeDelay(MAXIMUM_DELAY)} away.`);
   }
   const guild = await client.guilds.fetch(guildId)
     .catch(() => { throw new Error(`The server "${guildId}" doesn't exist.`); });
@@ -124,12 +127,12 @@ export default {
     .setDescription('Remind you of a message')
     .addStringOption(option =>
       option.setName('message')
-        .setDescription('Message to remind you of')
+        .setDescription('Select the message to remind you of')
         .setAutocomplete(true)
         .setRequired(true))
     .addStringOption(option =>
       option.setName('when')
-        .setDescription('When should I remind you about this message')
+        .setDescription('When should I remind you about this message?')
         .setAutocomplete(true)
         .setRequired(true)),
   handleAutocomplete,
