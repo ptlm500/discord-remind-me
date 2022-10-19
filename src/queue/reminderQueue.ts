@@ -24,7 +24,7 @@ const reminderQueue = new Queue<RemindJob>(
   });
 
 reminderQueue.process(async (job, done) => {
-  console.log(`Processing reminder ${job.id} attempt ${job.attemptsMade + 1}`);
+  logger.notice(`🔔 Processing reminder ${job.id} attempt ${job.attemptsMade + 1}`);
   const { memberId, channelId, messageId } = job.data;
 
   try {
@@ -39,7 +39,7 @@ reminderQueue.process(async (job, done) => {
 
     done();
   } catch (e) {
-    console.error(e);
+    logger.error('❗', e);
     done(e as Error);
   }
 });

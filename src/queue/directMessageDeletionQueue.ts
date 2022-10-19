@@ -22,7 +22,7 @@ const directMessageDeletionQueue = new Queue<MessageDeletionJob>(
   });
 
 directMessageDeletionQueue.process(async (job, done) => {
-  console.log(`Processing message deletion ${job.id} attempt ${job.attemptsMade + 1}`);
+  logger.notice(`🗑️ Processing message deletion ${job.id} attempt ${job.attemptsMade + 1}`);
   const { userId, messageId } = job.data;
 
   try {
@@ -37,7 +37,7 @@ directMessageDeletionQueue.process(async (job, done) => {
 
     done();
   } catch (e) {
-    console.error(e);
+    logger.error('❗', e);
     done(e as Error);
   }
 });

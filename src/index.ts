@@ -3,19 +3,23 @@ dotenv.config();
 
 import { DISCORD_TOKEN } from './constants';
 import discordClient from './discordClient';
+import logger from './logger/logger';
 import reminderQueue from './queue/reminderQueue';
 
+global.logger = logger;
+
 const main = async () => {
+  logger.notice('⌛ Connecting discord client');
   await discordClient.login(DISCORD_TOKEN);
-  console.log('Logged in');
+  logger.notice('✅ Logged in');
 
   const isReady = await reminderQueue.isReady();
 
   if (isReady) {
-    console.log('Redis ready');
+    logger.notice('✅ Redis ready');
   }
 };
 
-main().catch(err => {
-  console.error(err);
+main().catch(e => {
+  logger.error('❗', e);
 });

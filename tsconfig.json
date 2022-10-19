@@ -20,6 +20,9 @@
       "sourceMap": true,
       "baseUrl": "./"
   },
+  "paths": {
+        "*": ["types/*.d.ts"]
+    },
   "files": [
       "src/index.ts"
   ],

@@ -10,7 +10,7 @@ const buildReminderEmbed = (message: Message, user: User, timestamp: Date): Mess
     .addComponents(deleteReminder.builder);
 
   const embed = new EmbedBuilder()
-    .setColor(user.accentColor || 0x0099FF)
+    .setColor(0x0099FF)
     .setTitle('🔔 You asked me to remind you of this message')
     .setURL(buildDiscordMessageUrl(message))
     .setAuthor({
