@@ -20,7 +20,7 @@ const transports : winston.transport[] = [
     sentry: {
       dsn: SENTRY_DSN,
     },
-    level: 'warning',
+    level: 'info',
   }),
 ];
 
