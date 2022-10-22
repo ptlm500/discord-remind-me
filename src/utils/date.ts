@@ -1,5 +1,5 @@
 import { addMilliseconds, formatDistanceToNow, setHours, startOfTomorrow } from 'date-fns';
-import * as chrono from 'chrono-node';
+import { parseDate } from 'chrono-node';
 
 export const humanizeDelay = (delay: number) => {
   const now = new Date();
@@ -9,7 +9,7 @@ export const humanizeDelay = (delay: number) => {
 };
 
 export const parseDateText = (text: string) => {
-  const parsedDate = chrono.parseDate(text);
+  const parsedDate = parseDate(text);
 
   if (!parsedDate) {
     throw new Error(`I couldn't understand that time "${text}"`);

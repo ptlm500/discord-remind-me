@@ -8,7 +8,9 @@
     "lint": "eslint .",
     "start": "node dist/index.js",
     "start:watch": "nodemon dist/index.js",
-    "start:dev": "concurrently --kill-others \"npm run watch\" \"npm run start:watch\""
+    "start:dev": "concurrently --kill-others \"npm run watch\" \"npm run start:watch\"",
+    "test": "jest",
+    "test:ci": "jest --ci"
   },
   "author": "ptlm500 <peter_mills@hotmail.co.uk>",
   "license": "MIT",
@@ -22,13 +24,17 @@
     "winston-transport-sentry-node": "^2.6.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^7.6.0",
     "@types/bull": "^3.15.9",
+    "@types/jest": "^29.2.0",
     "@types/node": "^18.8.4",
     "@typescript-eslint/eslint-plugin": "^5.40.0",
     "@typescript-eslint/parser": "^5.40.0",
     "concurrently": "^7.4.0",
     "eslint": "^8.25.0",
+    "jest": "^29.2.1",
     "nodemon": "^2.0.20",
+    "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.4"
   }

@@ -88,6 +88,13 @@ const validateReminderOptions = async ({ memberId, guildId, channelId, messageId
     .catch(() => { throw new Error(`The message "${messageId}" doesn't exist in channel ${channelId}.`); });
 };
 
+type MessageChoice = {
+  sender: string;
+  content: string;
+  name: string;
+  value: string;
+}
+
 const buildAutoCompleteChoices = (callerUserId: string, messages: Collection<string, Message<boolean>>) => {
   const choices: MessageChoice[] = [];
   messages.forEach(message => {
@@ -113,13 +120,6 @@ const choiceSenderOrMessageIncludes = (choice: MessageChoice, value: string) => 
   return choice.sender.toLowerCase().includes(value)
     || choice.content.toLowerCase().includes(value);
 };
-
-type MessageChoice = {
-  sender: string;
-  content: string;
-  name: string;
-  value: string;
-}
 
 export default {
   builder: new SlashCommandBuilder()

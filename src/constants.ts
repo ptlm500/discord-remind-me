@@ -16,4 +16,4 @@ export const CLIENT_ID = getEnvVar('CLIENT_ID');
 export const GUILD_ID = getEnvVar('GUILD_ID');
 export const REDIS_URL = getEnvVar('REDIS_URL');
 export const MAXIMUM_DELAY = 3 * secondsInMonth * 1000;
-export const SENTRY_DSN = getEnvVar('SENTRY_DSN');
+export const SENTRY_DSN = PROD ? getEnvVar('SENTRY_DSN') : '';
