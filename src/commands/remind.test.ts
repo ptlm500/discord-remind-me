@@ -1,7 +1,12 @@
 import remind from './remind';
-import { AutocompleteInteraction, AutocompleteFocusedOption, Collection, Message } from 'discord.js';
+import { AutocompleteInteraction, AutocompleteFocusedOption, Message } from 'discord.js';
 import { faker } from '@faker-js/faker';
 import { discord } from '../../test/fixtures';
+import reminderService from '../services/reminderService';
+import { checkMessageExists } from '../discordClient/message';
+import { AutocompleteInteractionBuilder, ChatInputInteractionBuilder } from '../../test/fixtures/discord';
+jest.mock('../services/reminderService');
+jest.mock('../discordClient/message');
 
 describe('remind', () => {
   it('exports a builder with the expected configuration', () => {
@@ -41,102 +46,82 @@ describe('remind', () => {
   });
 
   describe('handleAutocomplete for the message option', () => {
-    const mockFetchMessages = jest.fn();
-    const mockRespond = jest.fn();
-    const mockGetFocused = jest.fn(() => ({
-      name: 'message',
-      value: '',
-    } as AutocompleteFocusedOption));
-    const interaction = {
-      user: {
-        id: faker.datatype.uuid(),
-      },
-      options: {
-        getFocused: mockGetFocused,
-      },
-      channel: {
-        messages: {
-          fetch: mockFetchMessages,
-        },
-      },
-      respond: mockRespond,
-    } as unknown as AutocompleteInteraction;
-
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
-
     it('calls mockFetchMessage and returns when no messages are returned', async () => {
+      const interaction = new AutocompleteInteractionBuilder({ name: 'message', value: '' })
+        .build();
       await remind.handleAutocomplete(interaction);
-      expect(mockFetchMessages).toHaveBeenCalledWith({ limit: 50 });
-      expect(mockRespond).not.toHaveBeenCalled();
+      expect(interaction.channel?.messages.fetch).toHaveBeenCalledWith({ limit: 50 });
+      expect(interaction.respond).not.toHaveBeenCalled();
     });
 
-    const convertMessageToExpectedResponse = (message: Message<boolean>) => ({
+    const convertMessageToExpectedResponse = (userId: string, message: Message<boolean>) => ({
       sender: message.author.username,
       content: message.cleanContent,
       name: `${message.author.username.substring(0, 15)}: ${message.cleanContent.substring(0, 80)}`,
-      value: `${interaction.user.id},${message.guildId},${message.channelId},${message.id}`,
+      value: `${userId},${message.guildId},${message.channelId},${message.id}`,
     });
 
     it('responds with message choices when messages are returned', async () => {
       const messageCollection = discord.generateMessageCollection();
+      const interaction = new AutocompleteInteractionBuilder({ name: 'message', value: '' })
+        .withChannelMessages(messageCollection)
+        .build();
 
-      mockFetchMessages.mockReturnValue(messageCollection);
       await remind.handleAutocomplete(interaction);
 
-      const expectedResponse = messageCollection.map(convertMessageToExpectedResponse);
+      const expectedResponse = messageCollection
+        .map(message => convertMessageToExpectedResponse(interaction.user.id, message));
 
-      expect(mockRespond).toHaveBeenCalledWith(expectedResponse);
+      expect(interaction.respond).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('responds with up to 24 message choices', async () => {
       const messageCollection = discord.generateMessageCollection(50);
+      const interaction = new AutocompleteInteractionBuilder({ name: 'message', value: '' })
+        .withChannelMessages(messageCollection)
+        .build();
 
-      mockFetchMessages.mockReturnValue(messageCollection);
       await remind.handleAutocomplete(interaction);
 
-      const expectedResponse = messageCollection.map(convertMessageToExpectedResponse).slice(0, 24);
+      const expectedResponse = messageCollection
+        .map(message => convertMessageToExpectedResponse(interaction.user.id, message))
+        .slice(0, 24);
 
-      expect(mockRespond).toHaveBeenCalledWith(expectedResponse);
+      expect(interaction.respond).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('filters the message choices based on message content', async () => {
-      const option = {
-        name: 'message',
-        value: faker.datatype.uuid(),
-      } as AutocompleteFocusedOption;
-      mockGetFocused.mockReturnValue(option);
-      const message = { cleanContent: option.value } as Message<boolean>;
-      const messagesMatchingValue = discord.generateMessage.many(10, message);
+      const messageOptionValue = faker.datatype.uuid();
+      const messagesMatchingValue = discord.generateMessage.many(10, { cleanContent: messageOptionValue } as Message<boolean>);
       const messagesNotMatchingValue = discord.generateMessage.many(10);
       const messageCollection = discord.buildCollection([...messagesMatchingValue, ...messagesNotMatchingValue]);
+      const interaction = new AutocompleteInteractionBuilder({ name: 'message', value: messageOptionValue })
+        .withChannelMessages(messageCollection)
+        .build();
 
-      mockFetchMessages.mockReturnValue(messageCollection);
       await remind.handleAutocomplete(interaction);
 
-      const expectedResponse = messagesMatchingValue.map(convertMessageToExpectedResponse);
+      const expectedResponse = messagesMatchingValue
+        .map(message => convertMessageToExpectedResponse(interaction.user.id, message));
 
-      expect(mockRespond).toHaveBeenCalledWith(expectedResponse);
+      expect(interaction.respond).toHaveBeenCalledWith(expectedResponse);
     });
 
     it('filters the message choices based on message sender', async () => {
-      const option = {
-        name: 'message',
-        value: faker.datatype.uuid(),
-      } as AutocompleteFocusedOption;
-      mockGetFocused.mockReturnValue(option);
-      const message = { author: { username: option.value } } as Message<boolean>;
-      const messagesMatchingValue = discord.generateMessage.many(10, message);
+      const messageOptionValue = faker.datatype.uuid();
+      const messagesMatchingValue = discord.generateMessage.many(10, { author: { username: messageOptionValue } } as Message<boolean>);
       const messagesNotMatchingValue = discord.generateMessage.many(10);
       const messageCollection = discord.buildCollection([...messagesMatchingValue, ...messagesNotMatchingValue]);
+      const interaction = new AutocompleteInteractionBuilder({ name: 'message', value: messageOptionValue })
+        .withChannelMessages(messageCollection)
+        .build();
 
-      mockFetchMessages.mockReturnValue(messageCollection);
       await remind.handleAutocomplete(interaction);
 
-      const expectedResponse = messagesMatchingValue.map(convertMessageToExpectedResponse);
+      const expectedResponse = messagesMatchingValue
+        .map(message => convertMessageToExpectedResponse(interaction.user.id, message));
 
-      expect(mockRespond).toHaveBeenCalledWith(expectedResponse);
+      expect(interaction.respond).toHaveBeenCalledWith(expectedResponse);
     });
   });
 
@@ -189,6 +174,99 @@ describe('remind', () => {
 
       await remind.handleAutocomplete(interaction);
       expect(mockRespond).toHaveBeenCalledWith([]);
+    });
+  });
+
+  describe('handleChatInput', () => {
+    const mockCreateReminder = jest.mocked(reminderService.createReminder)
+      .mockReturnValue(Promise.resolve());
+    const now = new Date();
+    beforeAll(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(now);
+    });
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    afterAll(() => {
+      jest.useRealTimers();
+    });
+
+    const memberId = faker.datatype.uuid();
+    const guildId = faker.datatype.uuid();
+    const channelId = faker.datatype.uuid();
+    const messageId = faker.datatype.uuid();
+
+    it('creates a reminder and replies with confirmation', async () => {
+      const interaction = new ChatInputInteractionBuilder()
+        .withOption('message', `${memberId},${guildId},${channelId},${messageId}`)
+        .withOption('when', 'in 1 sec')
+        .build();
+
+      jest.mocked(checkMessageExists).mockImplementation(async () => true);
+      await remind.handleChatInput(interaction);
+
+      expect(checkMessageExists).toHaveBeenCalledWith({ memberId, guildId, channelId, messageId });
+
+      expect(mockCreateReminder).toHaveBeenCalledWith({
+        memberId,
+        guildId,
+        channelId,
+        messageId,
+        delay: 1000,
+      });
+
+      expect(interaction.reply).toHaveBeenCalledWith({
+        content: `I'll remind you of [this message](https://discord.com/channels/${guildId}/${channelId}/${messageId}) in less than a minute`,
+        ephemeral: true,
+      });
+    });
+
+    it('throws an error and doesn\'t create a reminder for times in the past', async () => {
+      const interaction = new ChatInputInteractionBuilder()
+        .withOption('message', `${memberId},${guildId},${channelId},${messageId}`)
+        .withOption('when', 'yesterday')
+        .build();
+
+      jest.mocked(checkMessageExists).mockImplementation(async () => true);
+
+      await expect(remind.handleChatInput(interaction))
+        .rejects
+        .toThrow('You can\'t remind your past self.');
+
+      expect(mockCreateReminder).not.toHaveBeenCalled();
+    });
+
+    it('throws an error for reminders over the maximum delay', async () => {
+      const interaction = new ChatInputInteractionBuilder()
+        .withOption('message', `${memberId},${guildId},${channelId},${messageId}`)
+        .withOption('when', 'in 2 sec')
+        .build();
+
+      jest.mocked(checkMessageExists).mockImplementation(async () => true);
+
+      await expect(remind.handleChatInput(interaction))
+        .rejects
+        .toThrow('You can\'t set reminders over less than a minute away.');
+
+      expect(mockCreateReminder).not.toHaveBeenCalled();
+    });
+
+    it('throws an error when the message can\'t be found', async () => {
+      const interaction = new ChatInputInteractionBuilder()
+        .withOption('message', `${memberId},${guildId},${channelId},${messageId}`)
+        .withOption('when', 'in 1 sec')
+        .build();
+
+      jest.mocked(checkMessageExists).mockImplementation(async () => { throw new Error(); });
+
+      await expect(remind.handleChatInput(interaction))
+        .rejects
+        .toThrow('I couldn\' find that message');
+
+      expect(mockCreateReminder).not.toHaveBeenCalled();
     });
   });
 });

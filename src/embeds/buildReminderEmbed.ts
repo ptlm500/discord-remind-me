@@ -12,7 +12,6 @@ const buildReminderEmbed = (message: Message, user: User, timestamp: Date): Mess
   const embed = new EmbedBuilder()
     .setColor(0x0099FF)
     .setTitle('🔔 You asked me to remind you of this message')
-    .setURL(buildDiscordMessageUrl(message))
     .setAuthor({
       name: message.author.username,
       iconURL: message.author.avatarURL() || undefined,
@@ -21,6 +20,14 @@ const buildReminderEmbed = (message: Message, user: User, timestamp: Date): Mess
     .setDescription(message.cleanContent.substring(0, 4096))
     .setFooter({ text: 'Created' })
     .setTimestamp(timestamp);
+
+  if (message.guildId) {
+    embed.setURL(buildDiscordMessageUrl({
+      guildId: message.guildId,
+      channelId: message.channelId,
+      messageId: message.id,
+    }));
+  }
 
   const firstAttachment = message.attachments.first();
   if (firstAttachment?.url) {

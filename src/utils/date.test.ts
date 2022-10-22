@@ -27,6 +27,10 @@ describe('getMsUntil', () => {
     jest.setSystemTime(now);
   });
 
+  afterAll(() => {
+    jest.useRealTimers();
+  });
+
   it('returns the ms until the provided date, from now', () => {
     const expectedDifferenceInMs = faker.datatype.number();
     const date = new Date(Date.now() + expectedDifferenceInMs);
@@ -50,9 +54,5 @@ describe('getMsUntil', () => {
   it('returns the ms until the provided date, from now', () => {
     const hours = faker.datatype.number(23);
     expect(getMsUntilTomorrowAt(hours)).toBe((hours + 1) * HOURS_IN_MS);
-  });
-
-  afterAll(() => {
-    jest.useRealTimers();
   });
 });

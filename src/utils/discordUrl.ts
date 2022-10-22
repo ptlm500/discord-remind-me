@@ -1,5 +1,3 @@
-import { Message } from 'discord.js';
-
 const DISCORD_BASE_URL = 'https://discord.com/';
 const DISCORD_CHANNEL_URL = `${DISCORD_BASE_URL}channels/`;
 
@@ -14,8 +12,13 @@ export const parseDiscordMessageUrl = (url: string) => {
   };
 };
 
-export const buildDiscordMessageUrl = (message: Message) => {
-  return `${DISCORD_CHANNEL_URL}${message.guildId}/${message.channelId}/${message.id}`;
+type MessageUrlOptions = {
+  guildId: string;
+  channelId: string;
+  messageId: string;
+}
+export const buildDiscordMessageUrl = ({ guildId, channelId, messageId }: MessageUrlOptions) => {
+  return `${DISCORD_CHANNEL_URL}${guildId}/${channelId}/${messageId}`;
 };
 
 export const buildDiscordProfileUrl = (userId: string) => {
