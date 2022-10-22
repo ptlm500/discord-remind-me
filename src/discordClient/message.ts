@@ -1,4 +1,4 @@
-import client from '../discordClient';
+import client from './discordClient';
 
 export const checkMessageExists = async ({ memberId, guildId, channelId, messageId }: { memberId: string, guildId: string, channelId: string, messageId: string }) => {
   const guild = await client.guilds.fetch(guildId)

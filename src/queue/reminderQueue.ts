@@ -1,5 +1,5 @@
 import Queue from 'bull';
-import discordClient from '../discordClient';
+import discordClient from '../discordClient/discordClient';
 import { REDIS_URL } from '../constants';
 import buildReminderEmbed from '../embeds/buildReminderEmbed';
 

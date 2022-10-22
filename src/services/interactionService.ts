@@ -1,5 +1,5 @@
 import { MessageComponentInteraction, RepliableInteraction } from 'discord.js';
-import discordClient from '../discordClient';
+import discordClient from '../discordClient/discordClient';
 import directMessageDeletionQueue from '../queue/directMessageDeletionQueue';
 
 const deleteInteractionMessage = async (interaction: MessageComponentInteraction) => {

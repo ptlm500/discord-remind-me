@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { DISCORD_TOKEN } from './constants';
-import discordClient from './discordClient';
+import discordClient from './discordClient/discordClient';
 import logger from './logger/logger';
 import reminderQueue from './queue/reminderQueue';
 
