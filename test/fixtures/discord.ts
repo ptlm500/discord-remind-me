@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { AutocompleteInteraction, ChatInputCommandInteraction, Collection, Message } from 'discord.js';
+import { AutocompleteInteraction, ChatInputCommandInteraction, Collection, Message, MessageContextMenuCommandInteraction } from 'discord.js';
 import wrapWithMany from './wrapWithMany';
 
 export const buildCollection = <R>(list: R[]) : Collection<string, R> => {
@@ -77,6 +77,35 @@ export class AutocompleteInteractionBuilder {
 
   public withChannelMessages(messages: Collection<string, Message<boolean>>) {
     this.messages = messages;
+    return this;
+  }
+
+  public build() {
+    return this.interaction;
+  }
+}
+
+export class ContextMenuCommandInteractionBuilder {
+  private readonly interaction: MessageContextMenuCommandInteraction;
+
+  constructor(commandName: string) {
+    this.interaction = {
+      user: {},
+      targetMessage: {},
+      commandName,
+      reply: jest.fn(),
+    } as unknown as MessageContextMenuCommandInteraction;
+  }
+
+  public calledBy(userId: string) {
+    this.interaction.user.id = userId;
+    return this;
+  }
+
+  public calledOnMessage(guildId: string, channelId: string, messageId: string) {
+    this.interaction.targetMessage.guildId = guildId;
+    this.interaction.targetMessage.channelId = channelId;
+    this.interaction.targetMessage.id = messageId;
     return this;
   }
 
