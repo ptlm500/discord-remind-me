@@ -139,4 +139,56 @@ describe('remind', () => {
       expect(mockRespond).toHaveBeenCalledWith(expectedResponse);
     });
   });
+
+  describe('handleAutocomplete for the when option', () => {
+    const mockFetchMessages = jest.fn();
+    const mockRespond = jest.fn();
+    const mockGetFocused = jest.fn(() => ({
+      name: 'when',
+      value: '',
+    } as AutocompleteFocusedOption));
+    const interaction = {
+      user: {
+        id: faker.datatype.uuid(),
+      },
+      options: {
+        getFocused: mockGetFocused,
+      },
+      channel: {
+        messages: {
+          fetch: mockFetchMessages,
+        },
+      },
+      respond: mockRespond,
+    } as unknown as AutocompleteInteraction;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns valid time options as choices', async () => {
+      const option = {
+        name: 'when',
+        value: 'in 2 sec',
+      } as AutocompleteFocusedOption;
+      mockGetFocused.mockReturnValue(option);
+
+      await remind.handleAutocomplete(interaction);
+      expect(mockRespond).toHaveBeenCalledWith([{
+        name: 'in 2 sec',
+        value: 'in 2 sec',
+      }]);
+    });
+
+    it('doesn\'t return invalid time options as choices', async () => {
+      const option = {
+        name: 'when',
+        value: faker.lorem.words(),
+      } as AutocompleteFocusedOption;
+      mockGetFocused.mockReturnValue(option);
+
+      await remind.handleAutocomplete(interaction);
+      expect(mockRespond).toHaveBeenCalledWith([]);
+    });
+  });
 });
