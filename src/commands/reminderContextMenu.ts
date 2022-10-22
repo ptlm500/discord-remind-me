@@ -2,6 +2,7 @@ import { millisecondsInHour } from 'date-fns';
 import { ContextMenuCommandBuilder, ApplicationCommandType, MessageContextMenuCommandInteraction } from 'discord.js';
 import { getMsUntilTomorrowAt, humanizeDelay } from '../utils/date';
 import reminderService from '../services/reminderService';
+import { buildDiscordMessageUrl } from '../utils/discordUrl';
 
 const contextMenuOptions = [
   {
@@ -10,7 +11,7 @@ const contextMenuOptions = [
   },
   {
     name: 'Remind in 3 hours',
-    getDelay: () => millisecondsInHour,
+    getDelay: () => millisecondsInHour * 3,
   },
   {
     name: 'Remind next morning',
@@ -35,7 +36,7 @@ export const handleContextMenu = async (interaction: MessageContextMenuCommandIn
     .then(async () => {
       await interaction.reply({
         ephemeral: true,
-        content: `I'll remind you of this message in ${humanizeDelay(reminderOptions.delay)}`,
+        content: `I'll remind you of [this message](${buildDiscordMessageUrl(reminderOptions)}) in ${humanizeDelay(reminderOptions.delay)}`,
       });
     });
 };

@@ -1,9 +1,9 @@
 import { Client, GatewayIntentBits } from 'discord.js';
-import registerCommands from './commands/registerCommands';
-import commands from './commands';
-import components from './components';
-import interactionService from './services/interactionService';
-import { handleContextMenu } from './commands/reminderContextMenu';
+import registerCommands from '../commands/registerCommands';
+import commands from '../commands';
+import components from '../components';
+import interactionService from '../services/interactionService';
+import { handleContextMenu } from '../commands/reminderContextMenu';
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],

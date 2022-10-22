@@ -1,7 +1,8 @@
 import { parse } from 'chrono-node';
 import { AutocompleteInteraction, SlashCommandBuilder, ChatInputCommandInteraction, Collection, Message, AutocompleteFocusedOption } from 'discord.js';
+import { buildDiscordMessageUrl } from '../utils/discordUrl';
 import { MAXIMUM_DELAY } from '../constants';
-import client from '../discordClient';
+import { checkMessageExists } from '../discordClient/message';
 import reminderService from '../services/reminderService';
 import { getMsUntil, parseDateText, humanizeDelay } from '../utils/date';
 
@@ -54,7 +55,7 @@ const handleChatInput = async (interaction: ChatInputCommandInteraction) => {
     .then(async () => {
       await interaction.reply({
         ephemeral: true,
-        content: `I'll remind you of this message in ${humanizeDelay(reminderOptions.delay)}`,
+        content: `I'll remind you of [this message](${buildDiscordMessageUrl(reminderOptions)}) in ${humanizeDelay(reminderOptions.delay)}`,
       });
     });
 };
@@ -76,17 +77,20 @@ const validateReminderOptions = async ({ memberId, guildId, channelId, messageId
   } else if (delay > MAXIMUM_DELAY) {
     throw new Error(`You can't set reminders over ${humanizeDelay(MAXIMUM_DELAY)} away.`);
   }
-  const guild = await client.guilds.fetch(guildId)
-    .catch(() => { throw new Error(`The server "${guildId}" doesn't exist.`); });
-  await guild.members.fetch(memberId)
-    .catch(() => { throw new Error(`The user "${memberId}" doesn't exist.`); });
-  const channel = await guild.channels.fetch(channelId);
-  if (!channel || !channel.isTextBased()) {
-    throw new Error(`The channel "${memberId}" isn't a valid text channel.`);
+
+  try {
+    await checkMessageExists({ memberId, guildId, channelId, messageId });
+  } catch {
+    throw new Error('I couldn\' find that message');
   }
-  await channel.messages.fetch(messageId)
-    .catch(() => { throw new Error(`The message "${messageId}" doesn't exist in channel ${channelId}.`); });
 };
+
+type MessageChoice = {
+  sender: string;
+  content: string;
+  name: string;
+  value: string;
+}
 
 const buildAutoCompleteChoices = (callerUserId: string, messages: Collection<string, Message<boolean>>) => {
   const choices: MessageChoice[] = [];
@@ -113,13 +117,6 @@ const choiceSenderOrMessageIncludes = (choice: MessageChoice, value: string) => 
   return choice.sender.toLowerCase().includes(value)
     || choice.content.toLowerCase().includes(value);
 };
-
-type MessageChoice = {
-  sender: string;
-  content: string;
-  name: string;
-  value: string;
-}
 
 export default {
   builder: new SlashCommandBuilder()

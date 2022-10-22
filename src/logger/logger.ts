@@ -16,13 +16,18 @@ const transports : winston.transport[] = [
       format.simple(),
     ),
   }),
-  new Sentry({
-    sentry: {
-      dsn: SENTRY_DSN,
-    },
-    level: 'info',
-  }),
 ];
+
+if (PROD) {
+  transports.push(
+    new Sentry({
+      sentry: {
+        dsn: SENTRY_DSN,
+      },
+      level: 'info',
+    }),
+  );
+}
 
 const logger = winston.createLogger({
   levels: winston.config.syslog.levels,
