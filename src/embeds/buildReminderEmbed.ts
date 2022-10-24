@@ -1,9 +1,9 @@
-import { Message, User, EmbedBuilder, ActionRowBuilder, MessageCreateOptions, SelectMenuBuilder, ButtonBuilder } from 'discord.js';
+import { Message, EmbedBuilder, ActionRowBuilder, MessageCreateOptions, SelectMenuBuilder, ButtonBuilder } from 'discord.js';
 import deleteReminder from '../components/deleteReminder';
 import snoozeReminder from '../components/snoozeReminder';
 import { buildDiscordMessageUrl, buildDiscordProfileUrl } from '../utils/discordUrl';
 
-const buildReminderEmbed = (message: Message, user: User, timestamp: Date): MessageCreateOptions => {
+const buildReminderEmbed = (message: Message, timestamp: Date): MessageCreateOptions => {
   const selectRow = new ActionRowBuilder<SelectMenuBuilder>()
     .addComponents(snoozeReminder.builder);
   const buttonRow = new ActionRowBuilder<ButtonBuilder>()

@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { AutocompleteInteraction, ChatInputCommandInteraction, Collection, Message, MessageContextMenuCommandInteraction } from 'discord.js';
+import { AutocompleteInteraction, ButtonInteraction, ChatInputCommandInteraction, Collection, Embed, Message, MessageContextMenuCommandInteraction, SelectMenuInteraction } from 'discord.js';
 import wrapWithMany from './wrapWithMany';
 
 export const buildCollection = <R>(list: R[]) : Collection<string, R> => {
@@ -52,6 +52,10 @@ export class ChatInputInteractionBuilder {
     return this.interaction;
   }
 }
+
+export const generateDiscordMessageUrl = ({ guildId, channelId, messageId }: { guildId: string, channelId: string, messageId: string }) => {
+  return `https://discord.com/channels/${guildId}/${channelId}/${messageId}`;
+};
 
 export class AutocompleteInteractionBuilder {
   private readonly interaction: AutocompleteInteraction;
@@ -106,6 +110,53 @@ export class ContextMenuCommandInteractionBuilder {
     this.interaction.targetMessage.guildId = guildId;
     this.interaction.targetMessage.channelId = channelId;
     this.interaction.targetMessage.id = messageId;
+    return this;
+  }
+
+  public build() {
+    return this.interaction;
+  }
+}
+
+export class ButtonInteractionBuilder {
+  private readonly interaction: ButtonInteraction;
+
+  constructor() {
+    this.interaction = {
+      message: {
+        channelId: faker.datatype.uuid(),
+        delete: jest.fn(),
+      },
+    } as unknown as ButtonInteraction;
+  }
+
+  public build() {
+    return this.interaction;
+  }
+}
+
+export class SelectMenuInteractionBuilder {
+  private readonly interaction: SelectMenuInteraction;
+
+  constructor() {
+    this.interaction = {
+      user: {
+        id: faker.datatype.uuid(),
+      },
+      message: {
+        embeds: [],
+      },
+      values: [],
+    } as unknown as SelectMenuInteraction;
+  }
+
+  public withValue(value: string) {
+    this.interaction.values.push(value);
+    return this;
+  }
+
+  public forEmbed(embed: Partial<Embed>) {
+    this.interaction.message.embeds.push(embed as Embed);
     return this;
   }
 
