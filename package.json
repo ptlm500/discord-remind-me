@@ -18,7 +18,7 @@
     "bull": "^4.10.1",
     "chrono-node": "^2.4.1",
     "date-fns": "^2.29.3",
-    "discord.js": "^14.6.0",
+    "discord.js": "^14.8.0",
     "dotenv": "^16.0.3",
     "winston": "^3.8.2",
     "winston-transport-sentry-node": "^2.6.0"
