@@ -1,4 +1,4 @@
-import chrono from 'chrono-node';
+import * as chrono from 'chrono-node/en';
 import { AutocompleteInteraction, SlashCommandBuilder, ChatInputCommandInteraction, Collection, Message, AutocompleteFocusedOption } from 'discord.js';
 import { buildDiscordMessageUrl } from '../utils/discordUrl';
 import { MAXIMUM_DELAY } from '../constants';
@@ -36,7 +36,7 @@ const handleMessageOption = async (interaction: AutocompleteInteraction, focused
 };
 
 const handleWhenOption = async (interaction: AutocompleteInteraction, focusedOption: AutocompleteFocusedOption) => {
-  const parsedTimes = chrono.en.GB.parse(focusedOption.value);
+  const parsedTimes = chrono.GB.parse(focusedOption.value);
 
   const options = parsedTimes.map(parsedTime => ({
     name: parsedTime.text,
