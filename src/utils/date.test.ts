@@ -1,11 +1,11 @@
-import { parseDate } from 'chrono-node';
+import chrono from 'chrono-node';
 import { faker } from '@faker-js/faker';
 import { getMsUntil, parseDateText, getMsUntilTomorrowAt } from './date';
 
 jest.mock('chrono-node');
 
 describe('parseDateText', () => {
-  const mParseDate = jest.mocked(parseDate);
+  const mParseDate = jest.mocked(chrono.en.GB.parseDate);
 
   it('calls chrono.parseDate with the provided date text', () => {
     const dateText = 'in 2 sec';
